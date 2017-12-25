@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Hello Hydeout
+title: ÄãºÃ Hydeout
 excerpt_separator:  <!--more-->
 ---
 
