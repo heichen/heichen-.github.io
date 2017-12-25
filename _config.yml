@@ -1,9 +1,10 @@
 # Dependencies
 markdown:         kramdown
 highlighter:      rouge
-encoding: utf-8
+
 
 # Setup
+encoding: utf-8
 title:            ü\³½
 tagline:          'A Jekyll theme'
 description:      'The <a href="http://hyde.getpoole.com" target="_blank">Hyde</a> theme for <a href="http://jekyllrb.com" target="_blank">Jekyll</a>, refreshed.'
