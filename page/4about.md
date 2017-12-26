@@ -10,7 +10,7 @@ type: page
 {:toc}
 
 ## 关于我
-![](https://img.alicdn.com/tfs/TB18QnlOpXXXXcVXpXXXXXXXXXX-388-256.png)
+![](https://github.com/heichen/heichen.github.io/blob/master/page/me.JPG?raw=true)
 
 王晨
 
