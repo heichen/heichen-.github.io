@@ -1,29 +1,23 @@
-# Jekyll configuration
 
-name: Xixia
-description: Welcome to Xixia！
+title: My Resume
+url: 'http://junlulocky.com'
+baseurl: '/PanelCV' #change it according to your repository name
 
-# url is currently only used only for the RSS feed in feed.xml
-url: https://github.com/zxixia/jekyll-xixia
 
-# baseurl will often be '', but for a project page on gh-pages, it needs to
-# be the project name.
-# *** IMPORTANT: If your local "jekyll serve" throws errors change this to '' or
-#     run it like so: jekyll serve --baseurl=''
-baseurl: '/jekyll-xixia'
-## default date_format
-date_format: 
-  title: "%B-%-d-%Y"
-  archive: "%b"
-  categories: "%b-%Y"
-  tag: "%b-%Y"
-# Language
-lan: "en" 
 
-paginate: 10
+# Profile information
+yourname: Brown Smith  ## put your name
+title: 'GRAPHIC &amp; WEB DESIGNER'  ## your title
+location: San Francisco , CA
 
-highlighter: rouge
-markdown: kramdown
-gems: ['jekyll-paginate']
 
-exclude: ['README.md', 'LICENSE', "*.bak"]
+## Social Profiles
+facebook: http://www.facebook.com  ## your facebook account url
+twitter: http://www.twitter.com  ## your twitter account url
+linkedin: http://www.linkedin.com  ## your linkedin account url
+dribbble: http://www.dribble.com  ## you dribbble account url
+foursquare: http://www.foursquare.com  ## your foursquare account url
+
+
+
+# Update all the sections by editing the files inside _includes folder.
