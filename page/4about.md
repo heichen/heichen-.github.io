@@ -10,8 +10,6 @@ type: page
 {:toc}
 
 ## 关于我
-
-<iframe src="https://github.com/heichen/heichen.github.io/blob/master/page/me.JPG?raw=true" style="border: 0;height: 266px;width: 200px;overflow: hidden;" frameBorder="0"></iframe>
 ![](https://img.alicdn.com/tfs/TB18QnlOpXXXXcVXpXXXXXXXXXX-388-256.png)
 
 王晨
