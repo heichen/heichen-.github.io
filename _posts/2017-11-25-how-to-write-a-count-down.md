@@ -1,6 +1,6 @@
 ﻿---
 layout: post
-title:  "前端如何写一个精确的倒计时"
+title:  "【Shiro】Apache Shiro架构之实际运用（整合到Spring中)"
 categories: java
 tags:  countdown java
 author: DarkChen
@@ -9,7 +9,7 @@ author: DarkChen
 * content
 {:toc}
 
-关于写倒计时大家可能都都比较熟悉，使用 setTimeout 或 setInterval 就可以搞定。几秒钟或者几分钟的倒计时这样写没有问题，但是如果是长时间的倒计时，这样写就会不准确。如果用户修改了他的设备时间，这样的倒计时就没有意义了。今天就说说写一个精确的倒计时的方法。
+其实Shiro整合到Spring中并没有想象的那么困难，整到Spring中后，我们自定义的realm啊、securityManager啊等等都会交给spring去管理了，包括我们需要指定哪些url需要做什么样的验证，都是交给spring，也就是说，完全可以摆脱原来的那个.ini配置文件了，会觉得非常清爽，非常有逻辑。好了，下面开始整，Shiro部分参考了它的官方文档：http://shiro.apache.org/spring.html。
 
 ![](https://img.alicdn.com/tfs/TB18QnlOpXXXXcVXpXXXXXXXXXX-388-256.png)
 
