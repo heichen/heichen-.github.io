@@ -12,13 +12,14 @@ type: page
 ## 关于我
 
 <iframe src="https://github.com/heichen/heichen.github.io/blob/master/page/me.JPG?raw=true" style="border: 0;height: 266px;width: 200px;overflow: hidden;" frameBorder="0"></iframe>
+![](https://img.alicdn.com/tfs/TB18QnlOpXXXXcVXpXXXXXXXXXX-388-256.png)
 
 王晨
 
 主要兴趣集中在后台开发，享受代码无Bug的喜悦。
 追求未知的事物，喜欢唱歌，喜欢打台球，喜欢看别人打游戏。
 
-很喜欢崔健的歌词：现实像块石头，精神像个蛋，石头虽然坚硬，可蛋里才是生命。
+人生座右铭：抱最大的希望，为最大的努力，做最坏的打算。
 
 还有，学习是一个非常愉快的过程。共同加油！
 
