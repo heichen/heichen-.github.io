@@ -15,7 +15,9 @@ author: DarkChen
 
 
 ## 配置文件
+
 既然是用maven做的整合那首先来看一下pom.xml
+
 ### pom.xml
 ```java
 <?xml version="1.0" encoding="UTF-8"?>
@@ -283,7 +285,9 @@ author: DarkChen
 
 ```
 通过maven引入相应的依赖包后，便可以进行相应的Spring和shiro的配置
+
 ### applicationCotext.xml
+
 ```java
 <?xml version="1.0" encoding="UTF-8" ?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -340,6 +344,240 @@ author: DarkChen
 </beans>
 
 ```
+### spring-mvc.xml
+
+```java
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+              http://www.springframework.org/schema/mvc
+              http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+              http://www.springframework.org/schema/beans
+              http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+              http://www.springframework.org/schema/context
+              http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <!-- 配置静态文件-->
+    <mvc:default-servlet-handler/>
+
+    <!-- 扫描所有的 controller -->
+    <context:component-scan base-package="com.FFMS.controller" />
+
+    <!-- 启动注解驱动 SpringMVC 功能 -->
+    <mvc:annotation-driven />
+
+    <!--避免IE执行AJAX时，返回JSON出现下载文件 -->
+    <bean id="jsonMapping"
+          class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <property name="supportedMediaTypes">
+            <list>
+                <value>text/html;charset=gbk</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 配置文件上传，如果没有使用文件上传可以不用配置，当然如果不配，那么配置文件中也不必引入上传组件包 -->
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 默认编码 -->
+        <property name="defaultEncoding" value="gbk" />
+        <!-- 文件大小最大值 -->
+        <property name="maxUploadSize" value="10485760000" />
+        <!-- 内存中的最大值 -->
+        <property name="maxInMemorySize" value="40960" />
+    </bean>
+
+    <!-- shiro为集成springMvc 拦截异常，使用注解时无权限的跳转 -->
+    <bean
+            class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="exceptionMappings">
+            <props>
+                <!-- 这里你可以根据需要定义N多个错误异常转发 -->
+                <prop key="org.apache.shiro.authz.UnauthorizedException">redirect:/unauthorized</prop>
+                <prop key="org.apache.shiro.authz.UnauthenticatedException">redirect:/unauthorized</prop>
+                <prop key="java.lang.IllegalArgumentException">/error</prop>  <!-- 参数错误(bizError.jsp) -->
+                <prop key="java.lang.Exception">/error</prop>  <!-- 其他错误为'未定义错误'(unknowError.jsp) -->
+            </props>
+        </property>
+    </bean>
+
+</beans>
+
+```
+
+### spring-shiro.xml
+
+```java
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans" xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-4.0.xsd http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx-4.0.xsd http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.0.xsd http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-4.0.xsd http://www.springframework.org/schema/util
+    http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- 配置shiro的过滤器工厂类，id- shiroFilter要和我们在web.xml中配置的过滤器一致 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!-- 调用我们配置的权限管理器 -->
+        <property name="securityManager" ref="securityManager" />
+        <!-- 配置我们的登录请求地址 -->
+        <property name="loginUrl" value="/login.html" />
+        <!-- 配置我们在登录页登录成功后的跳转地址，如果你访问的是非/login地址，则跳到您访问的地址 -->
+        <property name="successUrl" value="/success.jsp" />
+        <!-- 如果您请求的资源不再您的权限范围，则跳转到/403请求地址 -->
+        <property name="unauthorizedUrl" value="/unauthorized.jsp" />
+        <property name="filters">
+            <util:map>
+                <entry key="logout" value-ref="logoutFilter" />
+            </util:map>
+        </property>
+        <!-- 权限配置 -->
+        <property name="filterChainDefinitions">
+            <value>
+                 <!--anon表示此地址不需要任何权限即可访问 -->
+                /login=anon
+                /icon/**=anon
+                /js/**=anon
+                /logout=logout
+                <!--所有的请求(除去配置的静态资源请求或请求地址为anon的请求)都要通过登录验证,如果未登录则跳到/login -->
+                /** = anon
+            </value>
+        </property>
+    </bean>
+    <bean id="logoutFilter" class="org.apache.shiro.web.filter.authc.LogoutFilter">
+        <property name="redirectUrl" value="/login.html" />
+    </bean>
+
+    <!-- 凭证匹配器 -->
+    <!--<bean id="passwordMatcher" class="org.apache.shiro.authc.credential.PasswordMatcher">-->
+        <!--<property name="passwordService" ref="passwordService" />-->
+    <!--</bean>-->
+    <!--<bean id="passwordService"-->
+          <!--class="org.apache.shiro.authc.credential.DefaultPasswordService">-->
+        <!--<property name="hashService" ref="hashService"/>-->
+        <!--<property name="hashFormat" ref="hashFormat"/>-->
+        <!--<property name="hashFormatFactory" ref="hashFormatFactory"/>-->
+    <!--</bean>-->
+    <!--<bean id="hashService" class="org.apache.shiro.crypto.hash.DefaultHashService"/>-->
+    <!--<bean id="hashFormat" class="org.apache.shiro.crypto.hash.format.Shiro1CryptFormat"/>-->
+    <!--<bean id="hashFormatFactory"-->
+          <!--class="org.apache.shiro.crypto.hash.format.DefaultHashFormatFactory">-->
+    <!--</bean>-->
+
+    <!-- 会话ID生成器 -->
+    <bean id="sessionIdGenerator"
+          class="org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator" />
+    <!-- 会话Cookie模板 关闭浏览器立即失效 -->
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="sid" />
+        <property name="httpOnly" value="true" />
+        <property name="maxAge" value="-1" />
+    </bean>
+    <!-- 会话DAO -->
+    <bean id="sessionDAO"
+          class="org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO">
+        <property name="sessionIdGenerator" ref="sessionIdGenerator" />
+    </bean>
+    <!-- 会话验证调度器，每30分钟执行一次验证 ，设定会话超时及保存 -->
+    <bean name="sessionValidationScheduler"
+          class="org.apache.shiro.session.mgt.ExecutorServiceSessionValidationScheduler">
+        <property name="interval" value="1800000" />
+        <property name="sessionManager" ref="sessionManager" />
+    </bean>
+    <!-- 会话管理器 -->
+    <bean id="sessionManager"
+          class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <!-- 全局会话超时时间（单位毫秒），默认30分钟 -->
+        <property name="globalSessionTimeout" value="1800000" />
+        <property name="deleteInvalidSessions" value="true" />
+        <property name="sessionValidationSchedulerEnabled" value="true" />
+        <property name="sessionValidationScheduler" ref="sessionValidationScheduler" />
+        <property name="sessionDAO" ref="sessionDAO" />
+        <property name="sessionIdCookieEnabled" value="true" />
+        <property name="sessionIdCookie" ref="sessionIdCookie" />
+    </bean>
+
+    <!-- 安全管理器 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="userRealm" />
+        <!-- 使用下面配置的缓存管理器 -->
+        <property name="cacheManager" ref="cacheManager" />
+        <property name="sessionManager" ref="sessionManager" />
+    </bean>
+
+    <!--启用shiro注解 -->
+    <bean
+            class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+            depends-on="lifecycleBeanPostProcessor">
+        <property name="proxyTargetClass" value="true" />
+    </bean>
+    <bean
+            class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager" />
+    </bean>
+
+    <!-- 相当于调用SecurityUtils.setSecurityManager(securityManager) -->
+    <bean
+            class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod"
+                  value="org.apache.shiro.SecurityUtils.setSecurityManager" />
+        <property name="arguments" ref="securityManager" />
+    </bean>
+
+    <!-- 注册自定义的Realm，并把密码匹配器注入，使用注解的方式自动注解会无法正确匹配密码 -->
+    <bean id="userRealm" class="com.FFMS.shiro.CustomRealm">
+        <!--<property name="credentialsMatcher" ref="passwordMatcher"/>-->
+        <property name="cachingEnabled" value="false"/>
+    </bean>
+
+    <bean id="cacheManager" class="org.apache.shiro.cache.MemoryConstrainedCacheManager" />
+    <!-- 保证实现了Shiro内部lifecycle函数的bean执行 -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+</beans>
+
+```
+### mybatis-config.xml
+
+```java
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 别名 -->
+    <typeAliases>
+        <package name="demo.entity"/>
+    </typeAliases>
+</configuration>
+
+```
+### log4j.properties
+
+```properties
+log4j.rootLogger=DEBUG, Console
+
+#Console
+log4j.appender.Console=org.apache.log4j.ConsoleAppender
+log4j.appender.Console.layout=org.apache.log4j.PatternLayout
+log4j.appender.Console.layout.ConversionPattern=%d [%t] %-5p [%c] - %m%n
+
+log4j.logger.java.sql.ResultSet=INFO
+log4j.logger.org.apache=INFO
+log4j.logger.java.sql.Connection=DEBUG
+log4j.logger.java.sql.Statement=DEBUG
+log4j.logger.java.sql.PreparedStatement=DEBUG
+
+```
+
+
 
 因此我们可以在获取剩余时间的时候，每次 new 一个设备时间，因为设备时间的流逝相对是准确的，并且如果设备打开了网络时间同步，也会解决这个问题。
 
