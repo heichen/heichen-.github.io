@@ -12,11 +12,8 @@ author: DarkChen
 其实Shiro整合到Spring中并没有想象的那么困难，整到Spring中后，我们自定义的realm啊、securityManager啊等等都会交给spring去管理了，包括我们需要指定哪些url需要做什么样的验证，都是交给spring，也就是说，完全可以摆脱原来的那个.ini配置文件了，会觉得非常清爽，非常有逻辑。本此整合采用maven进行包管理，下面开始整合，并用登录操作来验证是否整合成功！
 
 ## 配置文件
-
 既然是用maven做的整合那首先来看一下pom.xml
-
 ### pom.xml
-
 ```java
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -283,9 +280,7 @@ author: DarkChen
 
 ```
 通过maven引入相应的依赖包后，便可以进行相应的Spring和shiro的配置
-
 ### applicationCotext.xml
-
 ```java
 <?xml version="1.0" encoding="UTF-8" ?>
 <beans xmlns="http://www.springframework.org/schema/beans"
