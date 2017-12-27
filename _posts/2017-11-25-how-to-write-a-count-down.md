@@ -14,8 +14,6 @@ author: DarkChen
 
 
 
-
-
 ## 配置文件
 既然是用maven做的整合那首先来看一下pom.xml
 ### pom.xml
