@@ -9,9 +9,9 @@ author: DarkChen
 * content
 {:toc}
 
-其实Shiro整合到Spring中并没有想象的那么困难，整到Spring中后，我们自定义的realm啊、securityManager啊等等都会交给spring去管理了，包括我们需要指定哪些url需要做什么样的验证，都是交给spring，也就是说，完全可以摆脱原来的那个.ini配置文件了，会觉得非常清爽，非常有逻辑。好了，下面开始整，Shiro部分参考了它的官方文档：http://shiro.apache.org/spring.html。
+其实Shiro整合到Spring中并没有想象的那么困难，整到Spring中后，我们自定义的realm啊、securityManager啊等等都会交给spring去管理了，包括我们需要指定哪些url需要做什么样的验证，都是交给spring，也就是说，完全可以摆脱原来的那个.ini配置文件了，会觉得非常清爽，非常有逻辑。下面开始整合，并用登录操作来验证是否整合成功！
 
-![](https://img.alicdn.com/tfs/TB18QnlOpXXXXcVXpXXXXXXXXXX-388-256.png)
+(https://img.alicdn.com/tfs/TB18QnlOpXXXXcVXpXXXXXXXXXX-388-256.png)
 
 
 
