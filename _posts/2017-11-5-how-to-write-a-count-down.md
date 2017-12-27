@@ -11,6 +11,7 @@ author: DarkChen
 
 有人的地方就有江湖。程序员，是一个知识、智商、都异于常人的 群体，有人总结了程序员江湖等级鄙视链的方法和流程。
 老婆漂亮的程序员 【鄙视】 老婆不漂亮的程序员 【鄙视】 有女友的程序员 他们都 【鄙视】 单身狗程序员
+
 ![](http://ss.csdn.net/p?http://mmbiz.qpic.cn/mmbiz_jpg/2A8tXicCG8ynSx36qibtFBCwsnP4RBPXoqYbv8ZpCM4E1Y44BSpHq80791fNfficTETGzxwkckMibiapEHcUicd85BoQ/640?wx_fmt=jpeg)
 
 
