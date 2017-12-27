@@ -576,86 +576,257 @@ log4j.logger.java.sql.Statement=DEBUG
 log4j.logger.java.sql.PreparedStatement=DEBUG
 
 ```
-
-
-
-因此我们可以在获取剩余时间的时候，每次 new 一个设备时间，因为设备时间的流逝相对是准确的，并且如果设备打开了网络时间同步，也会解决这个问题。
-
-但是，如果用户修改了设备时间，那么整个倒计时就没有意义了，用户只要将设备时间修改为倒计时的 endTime 就可以轻易看到倒计时结束是页面的变化。因此一开始获取服务端时间就是很重要的。
-
-简单的说，一个简单的精确倒计时原理如下：
-
-- 初始化时请求一次服务器时间 serverTime，再 new 一个设备时间 deviceTime
-- deviceTime 与 serverTime 的差作为时间偏移修正
-- 每次递归时 new 一个系统时间，解决 setTimeout 不准确的问题
-
 ## 代码
 
-获取剩余时间的代码如下：
+编写完配置文件之后，下面通过一个登录的操作检验一下整合的是否有问题。
 
-```js
+首先建一个UserController类
+
+### UserController.java
+
+```java
+package com.FFMS.controller;
+        import com.FFMS.po.ActiveUser;
+        import com.FFMS.util.Md5Utils;
+        import org.apache.shiro.SecurityUtils;
+        import org.apache.shiro.authc.UsernamePasswordToken;
+        import org.apache.shiro.authz.annotation.RequiresPermissions;
+        import org.apache.shiro.subject.Subject;
+        import org.springframework.stereotype.Controller;
+        import org.springframework.ui.Model;
+        import org.springframework.web.bind.annotation.RequestMapping;
+        import org.springframework.web.bind.annotation.ResponseBody;
+        import javax.servlet.http.HttpServletRequest;
+
 /**
- * 获取剩余时间
- * @param  {Number} endTime    截止时间
- * @param  {Number} deviceTime 设备时间
- * @param  {Number} serverTime 服务端时间
- * @return {Object}            剩余时间对象
- */
-let getRemainTime = (endTime, deviceTime, serverTime) => {
-    let t = endTime - Date.parse(new Date()) - serverTime + deviceTime
-    let seconds = Math.floor((t / 1000) % 60)
-    let minutes = Math.floor((t / 1000 / 60) % 60)
-    let hours = Math.floor((t / (1000 * 60 * 60)) % 24)
-    let days = Math.floor(t / (1000 * 60 * 60 * 24))
-    return {
-        'total': t,
-        'days': days,
-        'hours': hours,
-        'minutes': minutes,
-        'seconds': seconds
+ * User:heichen
+ * Date:2017/11/3
+ * Time:20:38
+ **/
+@Controller
+public class UserController {
+
+    //用户登录
+    @RequestMapping("/login.form")
+    public String login(HttpServletRequest request,Model model) {
+        System.out.println("login.form");
+        String username=request.getParameter("username");
+        String password= Md5Utils.MD5(request.getParameter("password"));
+        System.out.println("密码加密前："+request.getParameter("password"));
+        System.out.println("密码加密后："+password);
+        Subject subject = SecurityUtils.getSubject();
+        UsernamePasswordToken token = new UsernamePasswordToken(username, password);
+        try{
+            subject.login(token);//会跳到我们自定义的realm中
+            //request.getSession().setAttribute("user", user);
+            //取身份信息
+            ActiveUser activeUser = (ActiveUser) subject.getPrincipal();
+            //通过model传到页面
+            model.addAttribute("activeUser", activeUser);
+            return "index";
+        }catch(Exception e){
+            e.printStackTrace();
+            //request.getSession().setAttribute("user", user);
+            request.setAttribute("error", "用户名或密码错误！");
+            return "login";
+        }
     }
 }
+
 ```
+然后是自定义Realm
 
-<del>获取服务器时间可以使用 mtop 接口 `mtop.common.getTimestamp` </del>
+### CustomRealm.java
 
-然后可以通过下面的方式来使用：
+```java
+package com.FFMS.shiro;
 
-```js
-// 获取服务端时间（获取服务端时间代码略）
-getServerTime((serverTime) => {
+import com.FFMS.po.ActiveUser;
+import com.FFMS.po.SysPermission;
+import com.FFMS.po.SysUser;
+import com.FFMS.service.SysService;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.SimpleAuthenticationInfo;
+import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.util.ByteSource;
+import org.springframework.beans.factory.annotation.Autowired;
 
-    //设置定时器
-    let intervalTimer = setInterval(() => {
+import java.util.ArrayList;
+import java.util.List;
 
-        // 得到剩余时间
-        let remainTime = getRemainTime(endTime, deviceTime, serverTime)
+public class CustomRealm extends AuthorizingRealm {
+	
+	//注入service
+	@Autowired
+	private SysService sysService;
 
-        // 倒计时到两个小时内
-        if (remainTime.total <= 7200000 && remainTime.total > 0) {
-            // do something
+	// 设置realm的名称
+	@Override
+	public void setName(String name) {
+		super.setName("customRealm");
+	}
 
-        //倒计时结束
-        } else if (remainTime.total <= 0) {
-            clearInterval(intervalTimer);
-            // do something
+	// 用于认证
+	//没有连接数据库的方法
+	//realm的认证方法，从数据库查询用户信息
+	@Override
+	protected AuthenticationInfo doGetAuthenticationInfo(
+			AuthenticationToken token) throws AuthenticationException {
+		System.out.println("认证++++++doGetAuthenticationInfo++++++");
+		// token是用户输入的用户名和密码 
+		// 第一步从token中取出用户名
+		String userCode = (String) token.getPrincipal();
+
+		// 第二步：根据用户输入的userCode从数据库查询
+		SysUser sysUser = null;
+		try {
+			sysUser = sysService.findSysUserByUserCode(userCode);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		// 如果查询不到返回null
+		if(sysUser==null){//
+			return null;
+		}
+		// 从数据库查询到密码
+		String password = sysUser.getPassword();
+		System.out.println("password:"+password);
+		
+		//盐
+		String salt = sysUser.getSalt();
+
+		// 如果查询到返回认证信息AuthenticationInfo
+		
+		//activeUser就是用户身份信息
+		ActiveUser activeUser = new ActiveUser();
+		
+		activeUser.setUserid(sysUser.getId());
+		activeUser.setUsercode(sysUser.getUsercode());
+		activeUser.setUsername(sysUser.getUsername());
+		//..
+		
+		//根据用户id取出菜单
+		List<SysPermission> menus  = null;
+		try {
+			//通过service取出菜单 
+			menus = sysService.findMenuListByUserId(sysUser.getId());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//将用户菜单 设置到activeUser
+		activeUser.setMenus(menus);
+
+		//将activeUser设置simpleAuthenticationInfo
+		SimpleAuthenticationInfo simpleAuthenticationInfo = new SimpleAuthenticationInfo(
+				activeUser, password,ByteSource.Util.bytes(salt), this.getName());
+
+		return simpleAuthenticationInfo;
+	}
+
+	// 用于授权
+	@Override
+	protected AuthorizationInfo doGetAuthorizationInfo(
+			PrincipalCollection principals) {
+		System.out.println("授权++++++doGetAuthorizationInfo++++++");
+		//从 principals获取主身份信息
+		//将getPrimaryPrincipal方法返回值转为真实身份类型（在上边的doGetAuthenticationInfo认证通过填充到SimpleAuthenticationInfo中身份类型），
+		ActiveUser activeUser =  (ActiveUser) principals.getPrimaryPrincipal();
+		
+		//根据身份信息获取权限信息
+		//从数据库获取到权限数据
+		List<SysPermission> permissionList = null;
+		try {
+			permissionList = sysService.findPermissionListByUserId(activeUser.getUserid());
+
+			System.out.println("拥有权限："+permissionList);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//单独定一个集合对象
+		List<String> permissions = new ArrayList<String>();
+		if(permissionList!=null){
+			for(SysPermission sysPermission:permissionList){
+				//将数据库中的权限标签 符放入集合
+				permissions.add(sysPermission.getPercode());
+			}
+		}
+		
+//		List<String> permissions = new ArrayList<String>();
+//		permissions.add("user:create");//用户的创建
+//		permissions.add("user:query");//商品查询权限
+//		permissions.add("item:add");//商品添加权限
+//		permissions.add("item:edit");//商品修改权限
+		//....
+		
+		//查到权限数据，返回授权信息(要包括 上边的permissions)
+		SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo();
+		//将上边查询到授权信息填充到simpleAuthorizationInfo对象中
+		simpleAuthorizationInfo.addStringPermissions(permissions);
+
+		return simpleAuthorizationInfo;
+	}
+	
+	//清除缓存
+	public void clearCached() {
+		PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
+		super.clearCache(principals);
+	}
+}
+
+```
+最后别忘记添加一个MD5的算法工具类（加密就靠他了）
+
+### Md5Utils.java
+
+```java
+package com.FFMS.util;
+
+import java.security.MessageDigest;
+
+/**
+ * User:heichen
+ * Date:2017/12/3
+ * Time:14:28
+ **/
+public class Md5Utils {
+
+    public final static String MD5(String s) {
+        char hexDigits[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+        try {
+            byte[] btInput = s.getBytes();
+            // 获得MD5摘要算法的 MessageDigest 对象
+            MessageDigest mdInst = MessageDigest.getInstance("MD5");
+            // 使用指定的字节更新摘要
+            mdInst.update(btInput);
+            // 获得密文
+            byte[] md = mdInst.digest();
+            // 把密文转换成十六进制的字符串形式
+            int j = md.length;
+            char str[] = new char[j * 2];
+            int k = 0;
+            for (int i = 0; i < j; i++) {
+                byte byte0 = md[i];
+                str[k++] = hexDigits[byte0 >>> 4 & 0xf];
+                str[k++] = hexDigits[byte0 & 0xf];
+            }
+            return new String(str);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-    }, 1000)
-})
-```
+    }
+}
 
-这样的的写法也可以做到准确倒计时，同时也比较简洁。不需要隔段时间再去同步一次服务端时间。
+```	
+## 成功
 
-## 补充
-
-在写倒计时的时候遇到了一个坑这里记录一下。
-
-**千万别在倒计时结束的时候请求接口**。会让服务端瞬间 QPS 峰值达到非常高。
-
-![](https://img.alicdn.com/tfs/TB1LBzjOpXXXXcnXpXXXXXXXXXX-154-71.png)
-
-如果在倒计时结束的时候要使用新的数据渲染页面，正确的做法是：
-
-在倒计时结束前的一段时间里，先请求好数据，倒计时结束后，再渲染页面。
-
-关于倒计时，如果你有什么更好的解决方案，欢迎评论交流。
