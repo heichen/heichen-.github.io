@@ -15,6 +15,8 @@ author: DarkChen
 
 既然是用maven做的整合那首先来看一下pom.xml
 
+### pom.xml
+
 ```java
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -282,7 +284,7 @@ author: DarkChen
 ```
 通过maven引入相应的依赖包后，便可以进行相应的Spring和shiro的配置
 
-# applicationCotext.xml
+### applicationCotext.xml
 
 ```java
 <?xml version="1.0" encoding="UTF-8" ?>
