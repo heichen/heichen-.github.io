@@ -2,7 +2,7 @@
 layout: post
 title:  "【Shiro】Apache Shiro架构之实际运用（将shiro整合到SSM中)"
 categories: java
-tags:  countdown java
+tags:  SSM java
 author: DarkChen
 ---
 
